@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel de Controle - Suporte Técnico por Mês</title>
+    <!-- Importando a biblioteca de gráficos Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f4f6f9;
+            color: #333;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            background-color: #1e293b;
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        header h1 {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        header p {
+            font-size: 14px;
+            color: #cbd5e1;
+        }
+
+        .header-controls {
+            display: flex;
+            align-items: center;
+        }
+
+        .select-mes {
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #cbd5e1;
+            font-size: 16px;
+            font-weight: bold;
+            background-color: white;
+            cursor: pointer;
+        }
+
+        .btn-exportar {
+            background-color: #10b981;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-left: 10px;
+            transition: background 0.2s;
+        }
+
+        .btn-exportar:hover {
+            background-color: #059669;
+        }
+
+        .main-layout {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 900px) {
+            .main-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .card h2 {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: #1e293b;
+            border-bottom: 2px solid #f1f5f9;
+            padding-bottom: 8px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #475569;
+        }
+
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #cbd5e1;
+            border-radius: 6px;
+            font-size: 14px;
+            background-color: #fff;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            height: 80px;
+        }
+
+        .btn-salvar {
+            width: 100%;
+            background-color: #2563eb;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-salvar:hover {
+            background-color: #1d4ed8;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 600px) {
+            .dashboard-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .counter-box {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            border-left: 4px solid #cbd5e1;
+        }
+
+        .counter-box.total { border-left-color: #1e293b; grid-column: span 3; }
+        @media (max-width: 600px) { .counter-box.total { grid-column: span 2; } }
+        
+        .counter-box.queda { border-left-color: #ef4444; }
+        .counter-box.lentidao { border-left-color: #f59e0b; }
+        .counter-box.roteador { border-left-color: #3b82f6; }
+        .counter-box.senha { border-left-color: #a855f7; }
+        .counter-box.comodo { border-left-color: #06b6d4; }
+        .counter-box.transferidos { border-left-color: #ec4899; }
+        .counter-box.financeiro { border-left-color: #10b981; }
+        .counter-box.outros { border-left-color: #64748b; }
+
+        .counter-title {
+            font-size: 11px;
+            font-weight: bold;
+            color: #64748b;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+
+        .counter-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #1e293b;
+        }
+
+        .chart-container {
+            position: relative;
+            margin-top: 20px;
+            height: 300px;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <div>
+            <h1>Painel do Atendente - Atendimentos Victor</h1>
+            <p>Monitore suas soluções e tipos de solicitações em tempo real</p>
+        </div>
+        <div class="header-controls">
+            <select id="selectMes" class="select-mes" onchange="alterarMes()">
+                <option value="2026-01">Janeiro / 2026</option>
+                <option value="2026-02">Fevereiro / 2026</option>
+                <option value="2026-03">Março / 2026</option>
+                <option value="2026-04">Abril / 2026</option>
+                <option value="2026-05">Maio / 2026</option>Normally I can help with things like this, but I don't seem to have access to that content. You can try again or ask me for something else.
